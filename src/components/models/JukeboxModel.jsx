@@ -6,11 +6,22 @@
  *   • A cream-toned faceplate with dials and a speaker grille
  *   • Five interactive horizontal visualizer bars that bounce
  *     up and down in real-time when music is playing.
+ *   • Floating particle musical notes when active.
  */
 
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { Html } from '@react-three/drei';
 import * as THREE from 'three';
+
+// Configuration for floating music notes when playing
+const NOTE_DATA = [
+  { char: '♪', delay: 0, x: -35, rot: -25, left: '-20px' },
+  { char: '♫', delay: 0.6, x: 30, rot: 20, left: '10px' },
+  { char: '♬', delay: 1.2, x: -20, rot: 35, left: '-5px' },
+  { char: '♩', delay: 1.8, x: 35, rot: -15, left: '20px' },
+  { char: '♫', delay: 2.4, x: -30, rot: 30, left: '-15px' },
+];
 
 export default function JukeboxModel({
   hovered = false,
@@ -119,6 +130,29 @@ export default function JukeboxModel({
         <torusGeometry args={[0.49, 0.03, 8, 24, Math.PI]} />
         {trimMaterial}
       </mesh>
+
+      {/* ── Floating Music Notes ── */}
+      {isPlaying && (
+        <Html position={[0, 0.6, 0.1]} center pointerEvents="none">
+          <div style={{ position: 'relative', width: '1px', height: '1px' }}>
+            {NOTE_DATA.map((note, idx) => (
+              <span
+                key={idx}
+                className="floating-music-note"
+                style={{
+                  animationDelay: `${note.delay}s`,
+                  '--note-x': `${note.x}px`,
+                  '--note-rot': `${note.rot}deg`,
+                  left: note.left,
+                  bottom: '0px',
+                }}
+              >
+                {note.char}
+              </span>
+            ))}
+          </div>
+        </Html>
+      )}
     </group>
   );
 }
