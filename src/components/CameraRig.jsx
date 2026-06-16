@@ -2,28 +2,20 @@
  * CameraRig.jsx — Smooth camera animation controller.
  *
  * Responsibilities:
- *   1. Render & manage OrbitControls
- *   2. When a waypoint becomes active, spring-animate the camera
- *      to a designated viewing angle and look-at target
+ *   1. Render & manage OrbitControls with smooth damping
+ *   2. When a waypoint becomes active, smoothly transition the camera
+ *      to a designated viewing angle and look-at target using damp/lerp
  *   3. When deselected, animate back to the default overview position
- *   4. Disable OrbitControls during animation so they don't fight
- *
- * This component is intentionally separated from Scene rendering
- * so camera logic can be debugged and tweaked in isolation.
- *
- * Props:
- *   activeNodeId  – ID of the currently selected waypoint (or null)
- *   nodes         – the SHAPES config array (needs .id, .position, .cameraOffset)
- *   onRest        – optional callback fired when camera animation settles
+ *   4. Disable OrbitControls during transition to prevent input fighting
+ *   5. Use frame-rate independent easing to ensure 100% smooth animation
  */
 
 import { useRef, useMemo, useEffect, useState } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { useSpring } from '@react-spring/three';
 import * as THREE from 'three';
 
-// ─── Defaults (tweak to taste) ───────────────────────────────────
+// ─── Defaults ─────────────────────────────────────────────────────
 
 /** Camera resting position when nothing is selected. */
 const DEFAULT_POSITION = [5, 4, 8];
@@ -31,37 +23,27 @@ const DEFAULT_POSITION = [5, 4, 8];
 /** Where the camera looks when nothing is selected. */
 const DEFAULT_TARGET = [0, 1, 0];
 
-/**
- * Fallback offset added to a node's position to compute where the
- * camera should go.  Individual shapes can override this via their
- * own `cameraOffset` field.
- *   [+x = right, +y = up, +z = towards viewer]
- */
+/** Fallback offset added to a node's position. */
 const DEFAULT_CAMERA_OFFSET = [3, 2.5, 4];
-
-/** Spring physics config — controls animation feel. */
-const SPRING_CONFIG = {
-  mass: 1.2,
-  tension: 60,
-  friction: 22,
-};
-
-/**
- * When the animated camera is within this distance of its target,
- * we consider the animation "settled" and re-enable OrbitControls.
- */
-const SETTLE_THRESHOLD = 0.05;
 
 // ─── Helpers ─────────────────────────────────────────────────────
 
 /** Compute the camera destination for a given node. */
-function getCameraGoals(node) {
-  const offset = node.cameraOffset ?? DEFAULT_CAMERA_OFFSET;
+function getCameraGoals(node, isMobile) {
+  let offset = node.cameraOffset ?? DEFAULT_CAMERA_OFFSET;
   const pos = node.position;
 
-  // Shift the camera target slightly upwards so both the 3D model (bottom)
-  // and the floating card (top) are perfectly framed in the viewport.
-  const targetYOffset = 0.65;
+  // Adjust camera distance/offset dynamically on mobile to prevent clipping
+  if (isMobile) {
+    offset = [
+      offset[0] * 1.35,
+      offset[1] * 1.25,
+      offset[2] * 1.35,
+    ];
+  }
+
+  // Look higher on desktop to account for card, slightly lower on mobile bottom sheet
+  const targetYOffset = isMobile ? 0.35 : 0.65;
 
   return {
     position: [
@@ -76,84 +58,81 @@ function getCameraGoals(node) {
 // ─── Component ───────────────────────────────────────────────────
 
 export default function CameraRig({ activeNodeId, nodes, onRest }) {
-  const { camera } = useThree();
+  const { camera, size } = useThree();
   const controlsRef = useRef();
 
-  // Track whether the spring animation is still in flight
-  const [isAnimating, setIsAnimating] = useState(false);
+  const isMobile = size.width <= 768;
 
-  // Build a lookup map: id → node config  (stable unless nodes change)
+  // Track transition state
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Look-up map for nodes
   const nodeMap = useMemo(() => {
     const map = {};
     for (const n of nodes) map[n.id] = n;
     return map;
   }, [nodes]);
 
-  // ─── Compute spring targets ──────────────────────────────────
   const activeNode = activeNodeId ? nodeMap[activeNodeId] : null;
 
-  const goals = activeNode
-    ? getCameraGoals(activeNode)
-    : { position: DEFAULT_POSITION, target: DEFAULT_TARGET };
+  // Compute camera position and lookAt target goals
+  const goals = useMemo(() => {
+    return activeNode
+      ? getCameraGoals(activeNode, isMobile)
+      : { position: DEFAULT_POSITION, target: DEFAULT_TARGET };
+  }, [activeNode, isMobile]);
 
-  // ─── Spring animation ────────────────────────────────────────
-  const [springs] = useSpring(
-    () => ({
-      camPos: goals.position,
-      camTarget: goals.target,
-      config: SPRING_CONFIG,
-      onChange: () => {
-        // Mark as animating whenever the spring is moving
-        if (!isAnimating) setIsAnimating(true);
-      },
-      onRest: () => {
-        // Animation settled — re-enable orbit controls
-        setIsAnimating(false);
-        onRest?.();
-      },
-    }),
-    [goals.position[0], goals.position[1], goals.position[2],
-    goals.target[0], goals.target[1], goals.target[2]],
-  );
+  // Target vectors for transition
+  const targetPos = useMemo(() => new THREE.Vector3(), []);
+  const targetTgt = useMemo(() => new THREE.Vector3(), []);
 
-  // When a new node is selected, kick off the animation
+  // Update target vectors and trigger transition when goals change
   useEffect(() => {
-    if (activeNodeId !== null) {
-      setIsAnimating(true);
-    }
-  }, [activeNodeId]);
+    targetPos.set(...goals.position);
+    targetTgt.set(...goals.target);
+    setIsTransitioning(true);
+  }, [goals, targetPos, targetTgt]);
 
-  // ─── Per-frame: apply spring values to camera ────────────────
-  const _lookAt = useMemo(() => new THREE.Vector3(), []);
+  useFrame((state, delta) => {
+    if (!isTransitioning) return;
 
-  useFrame(() => {
-    if (!isAnimating) return;
+    // Frame-rate independent lerp factor (Decay speed = 8)
+    const easeFactor = 1 - Math.exp(-8 * delta);
 
-    const pos = springs.camPos.get();
-    const tgt = springs.camTarget.get();
+    // Smoothly interpolate camera position
+    camera.position.lerp(targetPos, easeFactor);
 
-    // Apply interpolated position
-    camera.position.set(pos[0], pos[1], pos[2]);
-
-    // Apply interpolated lookAt
-    _lookAt.set(tgt[0], tgt[1], tgt[2]);
-    camera.lookAt(_lookAt);
-
-    // Keep OrbitControls target in sync so it doesn't snap
-    // back when re-enabled
+    // Smoothly interpolate OrbitControls target lookAt point
     if (controlsRef.current) {
-      controlsRef.current.target.copy(_lookAt);
+      const currentTgt = controlsRef.current.target;
+      currentTgt.lerp(targetTgt, easeFactor);
       controlsRef.current.update();
+    }
+
+    // Check if we are close enough to the goal to settle
+    const distPos = camera.position.distanceTo(targetPos);
+    const distTgt = controlsRef.current
+      ? controlsRef.current.target.distanceTo(targetTgt)
+      : 0;
+
+    if (distPos < 0.015 && distTgt < 0.015) {
+      // Snap to exact target coordinates to prevent floating precision jitter
+      camera.position.copy(targetPos);
+      if (controlsRef.current) {
+        controlsRef.current.target.copy(targetTgt);
+        controlsRef.current.update();
+      }
+      setIsTransitioning(false);
+      onRest?.();
     }
   });
 
-  // ─── Render ──────────────────────────────────────────────────
   return (
     <OrbitControls
       ref={controlsRef}
-      enabled={!isAnimating}
+      enabled={!isTransitioning}
       enableDamping
-      dampingFactor={0.12}
+      dampingFactor={0.08} // Smooth damping for OrbitControls
       minPolarAngle={0.2}
       maxPolarAngle={Math.PI / 2}
       minDistance={3}

@@ -918,7 +918,7 @@ export default function Scene() {
   return (
     <>
       {/* ====== Background & Fog ====== */}
-      <fog attach="fog" args={['#e8dcc8', 8, 25]} />
+      <fog attach="fog" args={['#e8dcc8', 16, 38]} />
 
       {/* ====== Camera Rig (controls + animation) ====== */}
       <CameraRig
