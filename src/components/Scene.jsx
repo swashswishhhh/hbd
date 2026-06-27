@@ -33,9 +33,9 @@ import MeditationZoneModel from './models/MeditationZoneModel';
 import PhotoTimelineModel from './models/PhotoTimelineModel';
 
 // Images
-import up1Img from '../images/up1.png';
-import up2Img from '../images/up2.png';
-import up3Img from '../images/up3.png';
+import up1Img from '../images/up1.jpg';
+import up2Img from '../images/up2.jpg';
+import up3Img from '../images/up3.jpg';
 
 // Songs
 import song1 from '../songs/close to you - the carpenters.mp3';

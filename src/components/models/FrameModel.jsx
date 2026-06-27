@@ -4,12 +4,12 @@ import { useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 
 import subjectImg from '../../images/subject.jpg';
-import down1Img from '../../images/down1.png';
-import down2Img from '../../images/down2.png';
-import down3Img from '../../images/down3.png';
-import up1Img from '../../images/up1.png';
-import up2Img from '../../images/up2.png';
-import up3Img from '../../images/up3.png';
+import down1Img from '../../images/down1.jpg';
+import down2Img from '../../images/down2.jpg';
+import down3Img from '../../images/down3.jpg';
+import up1Img from '../../images/up1.jpg';
+import up2Img from '../../images/up2.jpg';
+import up3Img from '../../images/up3.jpg';
 
 // ─── Fairy Light Bulb Component ───────────────────────────────────
 function FairyBulb({ position, delay = 0 }) {
@@ -118,7 +118,7 @@ export default function FrameModel({ hovered = false, isActive = false, onSubIte
 
   return (
     <group ref={boardRef}>
-      
+
       {/* ── 1. Large Cork Memory Board (Hangs on Wall) ── */}
       {/* Wood Frame */}
       <mesh castShadow receiveShadow position={[0, 0.2, 0]}>

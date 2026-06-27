@@ -161,49 +161,45 @@ function WallClock({ position }) {
         <boxGeometry args={[0.025, 0.32, 0.01]} />
         <meshStandardMaterial color="#1a1a2e" roughness={0.5} />
       </mesh>
-      {/* Center cap */}
-      <mesh position={[0, 0, 0.068]}>
-        <sphereGeometry args={[0.04, 8, 8]} />
-        <meshStandardMaterial color="#e74c3c" />
+      {/* Center cap pin */}
+      <mesh position={[0, 0, 0.075]}>
+        <cylinderGeometry args={[0.04, 0.04, 0.02, 8]} rotation={[Math.PI / 2, 0, 0]} />
+        <meshStandardMaterial color="#2c1a11" />
       </mesh>
     </group>
   );
 }
 
-// ─── Abstract Artwork Frame Component ─────────────────────────────
+// ─── Minimalist Japanese Zen Art Frame Component ───────────────────
 function ArtFrame({ position, themeColor }) {
   return (
     <group position={position}>
       {/* Wood Frame */}
       <mesh castShadow>
         <boxGeometry args={[1.5, 2.0, 0.08]} />
-        <meshStandardMaterial color="#3e2723" roughness={0.8} />
+        <meshStandardMaterial color="#2c1a11" roughness={0.8} />
       </mesh>
       {/* Matte Canvas */}
       <mesh position={[0, 0, 0.05]} castShadow>
         <boxGeometry args={[1.36, 1.86, 0.02]} />
-        <meshStandardMaterial color="#fcfcf9" roughness={0.95} />
+        <meshStandardMaterial color="#faf9f5" roughness={0.95} />
       </mesh>
-      {/* Abstract Art Geometry Details */}
+      {/* Zen Ink Painting Details */}
       <group position={[0, 0, 0.065]}>
-        {/* Soft circle representing ink wash or sun */}
-        <mesh position={[-0.15, 0.2, 0]}>
-          <cylinderGeometry args={[0.3, 0.3, 0.01, 24]} rotation={[Math.PI / 2, 0, 0]} />
-          <meshStandardMaterial color={themeColor} roughness={0.9} transparent opacity={0.85} />
+        {/* Soft background ink wash */}
+        <mesh position={[0, 0.2, 0]}>
+          <cylinderGeometry args={[0.4, 0.4, 0.01, 24]} rotation={[Math.PI / 2, 0, 0]} />
+          <meshStandardMaterial color={themeColor} roughness={0.9} transparent opacity={0.3} />
         </mesh>
-        {/* Accent dark lines representing brushstrokes */}
-        <mesh position={[0.1, -0.3, 0]} rotation={[0, 0, 0.4]}>
-          <boxGeometry args={[0.04, 0.9, 0.012]} />
-          <meshStandardMaterial color="#2c3e50" roughness={0.9} />
+        {/* Calligraphic Enso Circle (Ring) */}
+        <mesh position={[0, 0.05, 0.01]} rotation={[0, 0, 0]}>
+          <ringGeometry args={[0.24, 0.3, 32]} />
+          <meshStandardMaterial color="#2c2c2d" roughness={0.95} />
         </mesh>
-        <mesh position={[-0.2, -0.4, 0]} rotation={[0, 0, -0.6]}>
-          <boxGeometry args={[0.03, 0.6, 0.012]} />
-          <meshStandardMaterial color="#7f8c8d" roughness={0.9} />
-        </mesh>
-        {/* Small warm spot */}
-        <mesh position={[0.2, 0.4, 0]}>
-          <sphereGeometry args={[0.08, 12, 12]} />
-          <meshStandardMaterial color="#e67e22" />
+        {/* Red Signature Seal Stamp */}
+        <mesh position={[0.28, -0.45, 0.01]} castShadow>
+          <boxGeometry args={[0.08, 0.08, 0.005]} />
+          <meshStandardMaterial color="#b03a2e" roughness={0.7} />
         </mesh>
       </group>
     </group>
@@ -267,6 +263,69 @@ function WoodenBench({ position, rotation }) {
   );
 }
 
+// ─── Traditional Shoji Screen Panel Component ──────────────────────
+function ShojiPanel({ position, width, height }) {
+  const frameThickness = 0.08;
+  const barThickness = 0.018;
+
+  // Horizontal and vertical lattice bars
+  const verticalBars = [-width / 3.2, 0, width / 3.2];
+  const horizontalBars = [-height / 3.2, -height / 6.4, 0, height / 6.4, height / 3.2];
+
+  return (
+    <group position={position}>
+      {/* Warm translucent shoji paper backing */}
+      <mesh position={[0, 0, -0.015]}>
+        <planeGeometry args={[width, height]} />
+        <meshStandardMaterial
+          color="#fbfaf3"
+          roughness={0.95}
+          emissive="#fffcee"
+          emissiveIntensity={0.2}
+        />
+      </mesh>
+
+      {/* Outer wooden frames */}
+      {/* Left Frame */}
+      <mesh position={[-width / 2 + frameThickness / 2, 0, 0.01]} castShadow>
+        <boxGeometry args={[frameThickness, height, 0.04]} />
+        <meshStandardMaterial color="#3e2a1e" roughness={0.7} />
+      </mesh>
+      {/* Right Frame */}
+      <mesh position={[width / 2 - frameThickness / 2, 0, 0.01]} castShadow>
+        <boxGeometry args={[frameThickness, height, 0.04]} />
+        <meshStandardMaterial color="#3e2a1e" roughness={0.7} />
+      </mesh>
+      {/* Top Frame */}
+      <mesh position={[0, height / 2 - frameThickness / 2, 0.01]} castShadow>
+        <boxGeometry args={[width - frameThickness * 2, frameThickness, 0.04]} />
+        <meshStandardMaterial color="#3e2a1e" roughness={0.7} />
+      </mesh>
+      {/* Bottom Frame */}
+      <mesh position={[0, -height / 2 + frameThickness / 2, 0.01]} castShadow>
+        <boxGeometry args={[width - frameThickness * 2, frameThickness, 0.04]} />
+        <meshStandardMaterial color="#3e2a1e" roughness={0.7} />
+      </mesh>
+
+      {/* Vertical inner lattice bars (Kumiko) */}
+      {verticalBars.map((xVal, index) => (
+        <mesh key={`shoji-v-${index}`} position={[xVal, 0, 0.015]} castShadow>
+          <boxGeometry args={[barThickness, height - frameThickness * 2, 0.02]} />
+          <meshStandardMaterial color="#4a3324" roughness={0.8} />
+        </mesh>
+      ))}
+
+      {/* Horizontal inner lattice bars */}
+      {horizontalBars.map((yVal, index) => (
+        <mesh key={`shoji-h-${index}`} position={[0, yVal, 0.018]} castShadow>
+          <boxGeometry args={[width - frameThickness * 2, barThickness, 0.018]} />
+          <meshStandardMaterial color="#4a3324" roughness={0.8} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
 // ─── Main Cafe Interior ───────────────────────────────────────────
 export default function CafeInterior() {
   const wallHeight = 10;
@@ -275,46 +334,38 @@ export default function CafeInterior() {
   const leftX = -9;
   const rightX = 9;
 
-  // Generate coordinates for vertical panel slats along the back wall
-  const backWallSlats = useMemo(() => {
-    const slats = [];
-    const count = 30;
-    const startX = -8.7;
-    const step = 17.4 / (count - 1);
-    for (let i = 0; i < count; i++) {
-      slats.push(startX + i * step);
-    }
-    return slats;
-  }, []);
+  // Japanese Font CDN for Troika Text
+  const jpFontUrl = 'https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-jp/files/noto-sans-jp-japanese-400-normal.woff';
+
+  // Coordinates for 6 sliding Shoji panels along the back wall
+  const shojiPanelWidth = 3.0;
+  const shojiPositions = [-7.5, -4.5, -1.5, 1.5, 4.5, 7.5];
 
   return (
     <group>
-      {/* ── 1. Back Wall Base (Cream/Beige Panel) ── */}
+      {/* ── 1. Back Wall Base (Cream Paper/Plaster) ── */}
       <mesh position={[0, wallHeight / 2 - 2.0, depthZ]} receiveShadow>
         <planeGeometry args={[wallWidth, wallHeight]} />
         <meshStandardMaterial color="#F5E6D3" roughness={0.9} />
       </mesh>
 
-      {/* Repeating 3D vertical panel slats for drop shadows/realistic gaps */}
-      {backWallSlats.map((xVal, index) => (
-        <mesh
-          key={`back-slat-${index}`}
+      {/* Shoji Screen Lattice Panels (Ryokan Sliding Wall) */}
+      {shojiPositions.map((xVal, index) => (
+        <ShojiPanel
+          key={`back-shoji-${index}`}
           position={[xVal, wallHeight / 2 - 2.0, depthZ + 0.025]}
-          castShadow
-          receiveShadow
-        >
-          <boxGeometry args={[0.2, wallHeight, 0.04]} />
-          <meshStandardMaterial color="#ebdccb" roughness={0.8} />
-        </mesh>
+          width={shojiPanelWidth}
+          height={wallHeight}
+        />
       ))}
 
-      {/* ── 2. Left Wall (Taupe Wooden Slats & Wainscoting) ── */}
+      {/* ── 2. Left Wall (Hinoki Wood Panels & Trim) ── */}
       <group position={[leftX, wallHeight / 2 - 2.0, 0]} rotation={[0, Math.PI / 2, 0]}>
         <mesh receiveShadow>
           <planeGeometry args={[wallWidth, wallHeight]} />
           <meshStandardMaterial color="#E8DCC8" roughness={0.9} />
         </mesh>
-        {/* Horizontal wooden support trims */}
+        {/* Horizontal cedar trims */}
         <mesh position={[0, -1.5, 0.03]} castShadow receiveShadow>
           <boxGeometry args={[wallWidth, 0.15, 0.05]} />
           <meshStandardMaterial color="#8b7355" roughness={0.7} />
@@ -324,50 +375,61 @@ export default function CafeInterior() {
           <meshStandardMaterial color="#8b7355" roughness={0.7} />
         </mesh>
 
-        {/* ── Hanging Macramé Tapestry ── */}
+        {/* ── Japanese Hanging Scroll (Kakejiku) ── */}
         <group position={[-2, 1.8, 0.08]} rotation={[0, 0, 0]}>
           {/* Wooden hanging rod */}
           <mesh castShadow>
-            <cylinderGeometry args={[0.02, 0.02, 1.2, 8]} rotation={[0, 0, Math.PI / 2]} />
-            <meshStandardMaterial color="#8b7355" />
+            <cylinderGeometry args={[0.02, 0.02, 1.0, 8]} rotation={[0, 0, Math.PI / 2]} />
+            <meshStandardMaterial color="#5c4033" />
           </mesh>
-          {/* Fabric sheet */}
-          <mesh position={[0, -0.6, 0.015]} castShadow>
-            <boxGeometry args={[0.9, 1.2, 0.015]} />
-            <meshStandardMaterial color="#f5ebe0" roughness={0.9} />
+          {/* Scroll parchment body */}
+          <mesh position={[0, -0.65, 0.01]} castShadow>
+            <boxGeometry args={[0.8, 1.3, 0.015]} />
+            <meshStandardMaterial color="#eed9b3" roughness={0.9} />
           </mesh>
-          {/* Decorative woven stripes details */}
-          <mesh position={[0, -0.5, 0.025]}>
-            <boxGeometry args={[0.7, 0.06, 0.01]} />
-            <meshStandardMaterial color="#8b7355" />
+          {/* Inner silk mat board */}
+          <mesh position={[0, -0.6, 0.015]}>
+            <boxGeometry args={[0.6, 1.0, 0.005]} />
+            <meshStandardMaterial color="#c5a059" roughness={0.8} />
           </mesh>
-          <mesh position={[0, -0.7, 0.025]}>
-            <boxGeometry args={[0.7, 0.06, 0.01]} />
-            <meshStandardMaterial color="#dca9a7" />
+          {/* Core painting canvas */}
+          <mesh position={[0, -0.6, 0.018]}>
+            <boxGeometry args={[0.48, 0.85, 0.005]} />
+            <meshStandardMaterial color="#fffaf0" roughness={0.95} />
           </mesh>
-          {/* Fringe tassels at the bottom */}
-          <mesh position={[-0.3, -1.24, 0.015]}>
-            <cylinderGeometry args={[0.01, 0.01, 0.08, 6]} />
-            <meshStandardMaterial color="#ebdccb" />
+          
+          {/* Scroll Art details */}
+          {/* Minimalist Enso Zen circle */}
+          <mesh position={[0, -0.55, 0.022]} rotation={[Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[0.13, 0.16, 24]} />
+            <meshStandardMaterial color="#2d2d2d" roughness={0.95} />
           </mesh>
-          <mesh position={[0.0, -1.24, 0.015]}>
-            <cylinderGeometry args={[0.01, 0.01, 0.08, 6]} />
-            <meshStandardMaterial color="#ebdccb" />
+          {/* Red sun circle */}
+          <mesh position={[0.08, -0.38, 0.021]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.06, 0.06, 0.002, 16]} />
+            <meshStandardMaterial color="#c0392b" roughness={0.9} />
           </mesh>
-          <mesh position={[0.3, -1.24, 0.015]}>
-            <cylinderGeometry args={[0.01, 0.01, 0.08, 6]} />
-            <meshStandardMaterial color="#ebdccb" />
+          {/* Red seal stamp */}
+          <mesh position={[-0.12, -0.85, 0.022]}>
+            <boxGeometry args={[0.045, 0.045, 0.005]} />
+            <meshStandardMaterial color="#b03a2e" roughness={0.7} />
+          </mesh>
+
+          {/* Bottom wooden roller knob weight */}
+          <mesh position={[0, -1.3, 0.02]} castShadow>
+            <cylinderGeometry args={[0.035, 0.035, 0.9, 12]} rotation={[0, 0, Math.PI / 2]} />
+            <meshStandardMaterial color="#3e2a1e" roughness={0.6} />
           </mesh>
         </group>
       </group>
 
-      {/* ── 3. Right Wall (Taupe Wood Slats & Wainscoting) ── */}
+      {/* ── 3. Right Wall (Hinoki Wood Panels & Trim) ── */}
       <group position={[rightX, wallHeight / 2 - 2.0, 0]} rotation={[0, -Math.PI / 2, 0]}>
         <mesh receiveShadow>
           <planeGeometry args={[wallWidth, wallHeight]} />
           <meshStandardMaterial color="#E8DCC8" roughness={0.9} />
         </mesh>
-        {/* Horizontal wooden support trims */}
+        {/* Horizontal cedar trims */}
         <mesh position={[0, -1.5, 0.03]} castShadow receiveShadow>
           <boxGeometry args={[wallWidth, 0.15, 0.05]} />
           <meshStandardMaterial color="#8b7355" roughness={0.7} />
@@ -378,7 +440,7 @@ export default function CafeInterior() {
         </mesh>
       </group>
 
-      {/* ── 4. Ceiling (Soft Gray with Hanok Lattice Ceiling Trim) ── */}
+      {/* ── 4. Ceiling (Soft Gray with Japanese Cedar Lattice Ceiling Beams) ── */}
       <mesh
         position={[0, wallHeight - 2.0, 0]}
         rotation={[Math.PI / 2, 0, 0]}
@@ -387,7 +449,7 @@ export default function CafeInterior() {
         <planeGeometry args={[wallWidth, wallWidth]} />
         <meshStandardMaterial color="#D4D0C8" roughness={0.8} />
       </mesh>
-      {/* Decorative ceiling framing beams (Hanok grid vibe) */}
+      {/* Decorative ceiling framing beams (Japanese tea room grid vibe) */}
       <mesh position={[0, wallHeight - 2.03, depthZ + 0.5]} castShadow>
         <boxGeometry args={[wallWidth, 0.12, 0.2]} />
         <meshStandardMaterial color="#8b7355" roughness={0.8} />
@@ -402,12 +464,12 @@ export default function CafeInterior() {
       </mesh>
 
       {/* ── 5. Wall Decorations ── */}
-      {/* Korean Abstract Art 1 */}
+      {/* Minimalist Zen Art 1 */}
       <ArtFrame position={[-2.5, 3.2, depthZ + 0.1]} themeColor="#e59866" />
-      {/* Korean Abstract Art 2 */}
+      {/* Minimalist Zen Art 2 */}
       <ArtFrame position={[2.5, 3.2, depthZ + 0.1]} themeColor="#a2d9ce" />
 
-      {/* Wooden Sign Plaque with Hangul cafe name */}
+      {/* Wooden Sign Plaque with Japanese Kanji/Kana cafe name */}
       <group position={[0, 4.25, depthZ + 0.12]}>
         <mesh castShadow>
           <boxGeometry args={[1.5, 0.44, 0.04]} />
@@ -417,10 +479,11 @@ export default function CafeInterior() {
           position={[0, 0, 0.03]}
           fontSize={0.16}
           color="#fdfefe"
+          font={jpFontUrl}
           anchorX="center"
           anchorY="middle"
         >
-          하루 카페
+          春カフェ
         </Text>
       </group>
 
@@ -463,7 +526,7 @@ export default function CafeInterior() {
           <boxGeometry args={[0.02, 4.5, 0.02]} />
           <meshStandardMaterial color="#1a1a2e" />
         </mesh>
-        {/* Shade (Korean paper lantern style) */}
+        {/* Shade (Japanese paper lantern style) */}
         <mesh position={[0, -1.5, 0]} castShadow>
           <cylinderGeometry args={[0.22, 0.34, 0.65, 8]} />
           <meshStandardMaterial color="#fdfefe" roughness={0.9} emissive="#ffeaad" emissiveIntensity={0.8} />
@@ -477,7 +540,7 @@ export default function CafeInterior() {
           <boxGeometry args={[0.02, 4.5, 0.02]} />
           <meshStandardMaterial color="#1a1a2e" />
         </mesh>
-        {/* Shade (Korean paper lantern style) */}
+        {/* Shade (Japanese paper lantern style) */}
         <mesh position={[0, -1.5, 0]} castShadow>
           <cylinderGeometry args={[0.22, 0.34, 0.65, 8]} />
           <meshStandardMaterial color="#fdfefe" roughness={0.9} emissive="#ffeaad" emissiveIntensity={0.8} />
@@ -487,3 +550,4 @@ export default function CafeInterior() {
     </group>
   );
 }
+

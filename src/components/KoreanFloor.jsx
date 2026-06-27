@@ -168,9 +168,61 @@ function ShadowFloor() {
   );
 }
 
+/**
+ * TatamiMat represents a single Japanese tatami mat with woven grass texture
+ * and elegant dark fabric borders (Heri) along the long edges.
+ */
+function TatamiMat({ position, size, rotationY = 0, isHalf = false }) {
+  const matWidth = size[0];
+  const matLength = size[1];
+  
+  return (
+    <group position={position} rotation={[0, rotationY, 0]}>
+      {/* Main woven grass mat */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} castShadow receiveShadow>
+        <planeGeometry args={[matWidth, matLength]} />
+        <meshStandardMaterial 
+          color="#d2cc9f" // traditional soft greenish-yellow dry grass
+          roughness={0.95}
+        />
+      </mesh>
+      
+      {/* Dark green-black fabric borders (Heri) along the edges */}
+      {!isHalf ? (
+        <>
+          {/* Top border */}
+          <mesh position={[0, 0.001, -matLength / 2 + 0.02]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[matWidth, 0.04]} />
+            <meshStandardMaterial color="#1f2e24" roughness={0.8} /> {/* deep forest green heri */}
+          </mesh>
+          {/* Bottom border */}
+          <mesh position={[0, 0.001, matLength / 2 - 0.02]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[matWidth, 0.04]} />
+            <meshStandardMaterial color="#1f2e24" roughness={0.8} />
+          </mesh>
+        </>
+      ) : (
+        <>
+          {/* Half mat has borders on opposite edges to match layout */}
+          <mesh position={[0, 0.001, -matLength / 2 + 0.02]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[matWidth, 0.04]} />
+            <meshStandardMaterial color="#1f2e24" roughness={0.8} />
+          </mesh>
+          <mesh position={[0, 0.001, matLength / 2 - 0.02]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[matWidth, 0.04]} />
+            <meshStandardMaterial color="#1f2e24" roughness={0.8} />
+          </mesh>
+        </>
+      )}
+    </group>
+  );
+}
+
 // ─── Exported Floor ──────────────────────────────────────────────
 
 export default function KoreanFloor() {
+  const W = 1.4; // standard tatami unit width
+
   return (
     <group>
       {/* Procedural wood-grain floor */}
@@ -182,19 +234,23 @@ export default function KoreanFloor() {
       {/* Shadow-catching overlay */}
       <ShadowFloor />
 
-      {/* ── Central Area Rug (Dusty Rose with Cream Border) ── */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, FLOOR_Y + 0.003, 0]}>
-        <planeGeometry args={[7.0, 5.0]} />
-        <meshStandardMaterial color="#d9a09c" roughness={0.95} />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, FLOOR_Y + 0.004, 0]}>
-        <planeGeometry args={[6.6, 4.6]} />
-        <meshStandardMaterial color="#ebdccb" roughness={0.95} />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, FLOOR_Y + 0.005, 0]}>
-        <planeGeometry args={[6.2, 4.2]} />
-        <meshStandardMaterial color="#d9a09c" roughness={0.95} />
-      </mesh>
+      {/* ── Central Japanese Tatami Room Layout (Yojohan 4.5 Mats) ── */}
+      <group position={[0, FLOOR_Y + 0.002, 0]}>
+        {/* Mat 1: Horizontal, Top */}
+        <TatamiMat position={[-0.5 * W, 0, -1.0 * W]} size={[2.8, 1.4]} rotationY={0} />
+
+        {/* Mat 2: Vertical, Right */}
+        <TatamiMat position={[1.0 * W, 0, -0.5 * W]} size={[2.8, 1.4]} rotationY={Math.PI / 2} />
+
+        {/* Mat 3: Horizontal, Bottom */}
+        <TatamiMat position={[0.5 * W, 0, 1.0 * W]} size={[2.8, 1.4]} rotationY={0} />
+
+        {/* Mat 4: Vertical, Left */}
+        <TatamiMat position={[-1.0 * W, 0, 0.5 * W]} size={[2.8, 1.4]} rotationY={Math.PI / 2} />
+
+        {/* Center Half Mat (Square) */}
+        <TatamiMat position={[0, 0, 0]} size={[1.4, 1.4]} isHalf={true} />
+      </group>
 
       {/* ── Zone Shadow Boundaries under Main Stations ── */}
       {/* Tea Station (Cake) */}

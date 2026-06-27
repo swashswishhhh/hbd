@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { useTexture } from '@react-three/drei';
-import up1Img from '../../images/up1.png';
-import up2Img from '../../images/up2.png';
-import up3Img from '../../images/up3.png';
+import up1Img from '../../images/up1.jpg';
+import up2Img from '../../images/up2.jpg';
+import up3Img from '../../images/up3.jpg';
 
 export default function PhotoTimelineModel({ hovered = false, isActive = false, activeTimelineSlide = 0, isUnlocked = false }) {
   const frameMaterial = <meshStandardMaterial color="#4a2f13" roughness={0.7} />;

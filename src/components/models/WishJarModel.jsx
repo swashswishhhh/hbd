@@ -4,7 +4,8 @@
  * Renders:
  *   • A high-transmission glass physical jar
  *   • A wooden cork lid
- *   • Five colorful folded wish stars nestled inside
+ *   • Folded paper wish scrolls nestled inside (replacing simple stars)
+ *   • A fluttering drop animation when a new wish is created
  *   • An active breathing orange/gold point light inside
  */
 
@@ -12,11 +13,89 @@ import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
+// ─── Folded Wish Paper Note Component with animations ───────────────
+function WishPaper({ color, position, rotation, scale, animateIn, startY = 0.35 }) {
+  const meshRef = useRef();
+
+  // Random offsets for individual organic floating motion
+  const floatOffset = useMemo(() => Math.random() * Math.PI * 2, []);
+  const rotSpeed = useMemo(() => 0.05 + Math.random() * 0.05, []);
+  const floatSpeed = useMemo(() => 1.2 + Math.random() * 0.6, []);
+  const floatAmp = useMemo(() => 0.015 + Math.random() * 0.008, []);
+
+  useFrame((state) => {
+    const t = state.clock.getElapsedTime();
+    if (!meshRef.current) return;
+
+    if (animateIn) {
+      if (!meshRef.current.startTime) {
+        meshRef.current.startTime = t;
+      }
+      const elapsed = t - meshRef.current.startTime;
+      const duration = 1.6; // 1.6 seconds transition time
+      const progress = Math.min(1.0, elapsed / duration);
+
+      // Cubic ease-out descent
+      const easeProgress = 1.0 - Math.pow(1.0 - progress, 3.0);
+
+      const currentY = THREE.MathUtils.lerp(startY, position[1], easeProgress);
+      // Fluttering sway during descent
+      const flutterX = progress < 1.0 ? Math.sin(t * 10.0 + floatOffset) * 0.12 * (1.0 - progress) : 0;
+      const flutterZ = progress < 1.0 ? Math.cos(t * 8.0 + floatOffset) * 0.12 * (1.0 - progress) : 0;
+
+      meshRef.current.position.set(
+        position[0] + flutterX,
+        currentY,
+        position[2] + flutterZ
+      );
+
+      // Spin rapidly during descent
+      if (progress < 1.0) {
+        meshRef.current.rotation.set(
+          rotation[0] + t * 4.0 * (1.0 - progress),
+          rotation[1] + t * 6.0 * (1.0 - progress),
+          rotation[2]
+        );
+      } else {
+        // Descent complete -> hover gently
+        const floatY = Math.sin(t * floatSpeed + floatOffset) * floatAmp;
+        meshRef.current.position.set(position[0], position[1] + floatY, position[2]);
+        meshRef.current.rotation.set(rotation[0], rotation[1] + t * rotSpeed, rotation[2]);
+      }
+    } else {
+      // Gentle floating animation for already existing papers
+      const floatY = Math.sin(t * floatSpeed + floatOffset) * floatAmp;
+      meshRef.current.position.set(position[0], position[1] + floatY, position[2]);
+      meshRef.current.rotation.set(rotation[0], rotation[1] + t * rotSpeed, rotation[2]);
+    }
+  });
+
+  return (
+    <group ref={meshRef} scale={scale * 1.6}>
+      <group rotation={[0.2, 0.1, 0.4]}>
+        {/* Main folded paper strip */}
+        <mesh castShadow>
+          <boxGeometry args={[0.8, 0.03, 1.2]} />
+          <meshStandardMaterial color={color} roughness={0.9} />
+        </mesh>
+        {/* Golden tied thread/ribbon */}
+        <mesh position={[0, 0, 0]}>
+          <cylinderGeometry args={[0.13, 0.13, 0.08, 8]} rotation={[Math.PI / 2, 0, 0]} />
+          <meshStandardMaterial color="#d4af37" roughness={0.5} metalness={0.8} />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
 export default function WishJarModel({ hovered = false, isActive = false, wishes = [] }) {
   const lightRef = useRef();
   const starsRef = useRef();
 
-  // Pulse the internal light intensity to look like breathing fireflies
+  // Track initial wishes to avoid animating existing ones on load
+  const initialWishIds = useRef(new Set(wishes.map((w) => w.id)));
+
+  // Pulse internal light intensity to simulate magical glowing elements
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     if (lightRef.current) {
@@ -24,7 +103,7 @@ export default function WishJarModel({ hovered = false, isActive = false, wishes
       lightRef.current.intensity = baseIntensity + Math.sin(t * 2.0) * 0.4;
     }
     if (starsRef.current) {
-      // Gentle spin of the stars inside
+      // Gentle spin of the entire inside contents
       starsRef.current.rotation.y = t * 0.05;
     }
   });
@@ -48,7 +127,7 @@ export default function WishJarModel({ hovered = false, isActive = false, wishes
     { pos: [-0.06, 0.18, 0.06], rot: [0.8, 0.3, 0.7], scale: 0.052 },
   ], []);
 
-  // Map active wishes to star positions
+  // Map active wishes to position slots
   const starList = useMemo(() => {
     return wishes.map((wish, idx) => {
       const slot = starPositions[idx % starPositions.length];
@@ -114,25 +193,17 @@ export default function WishJarModel({ hovered = false, isActive = false, wishes
         <meshStandardMaterial color="#b38f6d" roughness={0.9} />
       </mesh>
 
-      {/* ── Wishes (Paper Stars) Inside ── */}
+      {/* ── Wishes (Folded Paper Scrolls) Inside ── */}
       <group ref={starsRef} position={[0, 0, 0]}>
         {starList.map((star) => (
-          <mesh
+          <WishPaper
             key={star.id}
+            color={star.col}
             position={star.pos}
             rotation={star.rot}
             scale={star.scale}
-            castShadow
-          >
-            {/* An octahedron makes a lovely geometric star shape */}
-            <octahedronGeometry args={[1, 0]} />
-            <meshStandardMaterial
-              color={star.col}
-              emissive={star.col}
-              emissiveIntensity={hovered ? 0.6 : 0.3}
-              roughness={0.5}
-            />
-          </mesh>
+            animateIn={!initialWishIds.current.has(star.id)}
+          />
         ))}
       </group>
 

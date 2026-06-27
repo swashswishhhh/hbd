@@ -100,19 +100,21 @@ function CherryBlossomPetals({ activeNodeId }) {
   );
 }
 
-// ─── Floating K-pop Lyrics & Birthday Wishes ──────────────────────
+// ─── Floating Japanese & English Wishes ───────────────────────────
 
 const LYRICS = [
-  '생일 축하해 🎂',
-  'Shine, dream, smile 🌟',
-  '꽃길만 걷자 🌸',
-  '봄날의 햇살처럼 ☀️',
-  'Cozy Moments 🍵',
+  'お誕生日おめでとう 🎂',
+  '夢、輝き、笑顔 🌟',
+  '花道を歩もう 🌸',
+  '小春日和のように ☀️',
+  '温もり 🍵',
   'Happy Birthday ✨',
 ];
 
 function FloatingWishes() {
   const groupRef = useRef();
+
+  const jpFontUrl = 'https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-jp/files/noto-sans-jp-japanese-400-normal.woff';
 
   const textParticles = useMemo(() => {
     const data = [];
@@ -168,6 +170,7 @@ function FloatingWishes() {
           text={p.text}
           fontSize={p.fontSize}
           color="#ffe5b4"
+          font={jpFontUrl}
           anchorX="center"
           anchorY="middle"
           fillOpacity={0.3}
@@ -178,15 +181,82 @@ function FloatingWishes() {
   );
 }
 
-// ─── Floating Hanbok Silhouettes ─────────────────────────────────
+// ─── Floating 3D Origami Cranes ───────────────────────────────────
 
-function FloatingHanboks() {
+function OrigamiCraneModel({ color, opacity }) {
+  return (
+    <group>
+      {/* Main body diamond / center fold */}
+      <mesh castShadow receiveShadow>
+        <coneGeometry args={[0.2, 0.5, 4]} />
+        <meshStandardMaterial
+          color={color}
+          emissive={color}
+          emissiveIntensity={0.15}
+          transparent
+          opacity={opacity}
+          depthWrite={false}
+        />
+      </mesh>
+      
+      {/* Left Wing - flat angled plane */}
+      <mesh position={[-0.2, 0.1, 0]} rotation={[0.4, 0, -0.6]} castShadow>
+        <boxGeometry args={[0.4, 0.01, 0.25]} />
+        <meshStandardMaterial
+          color={color}
+          emissive={color}
+          emissiveIntensity={0.1}
+          transparent
+          opacity={opacity + 0.02}
+          depthWrite={false}
+        />
+      </mesh>
+      
+      {/* Right Wing - flat angled plane */}
+      <mesh position={[0.2, 0.1, 0]} rotation={[0.4, 0, 0.6]} castShadow>
+        <boxGeometry args={[0.4, 0.01, 0.25]} />
+        <meshStandardMaterial
+          color={color}
+          emissive={color}
+          emissiveIntensity={0.1}
+          transparent
+          opacity={opacity + 0.02}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* Head/Neck */}
+      <mesh position={[0, 0.22, 0.18]} rotation={[-0.4, 0, 0]} castShadow>
+        <boxGeometry args={[0.04, 0.35, 0.04]} />
+        <meshStandardMaterial
+          color={color}
+          transparent
+          opacity={opacity}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* Tail */}
+      <mesh position={[0, 0.18, -0.2]} rotation={[0.5, 0, 0]} castShadow>
+        <boxGeometry args={[0.03, 0.3, 0.03]} />
+        <meshStandardMaterial
+          color={color}
+          transparent
+          opacity={opacity}
+          depthWrite={false}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+function FloatingOrigamiCranes() {
   const groupRef = useRef();
 
-  const hanboks = useMemo(() => [
-    { pos: [-6, 2, -13], scale: 0.8, color: '#fcd34d', speed: 0.4 },
-    { pos: [5, 3.5, -12], scale: 1.0, color: '#fca5a5', speed: 0.35 },
-    { pos: [-1, 4.5, -14], scale: 0.9, color: '#a7f3d0', speed: 0.5 },
+  const cranes = useMemo(() => [
+    { pos: [-6, 2, -13], scale: 1.0, color: '#ffb3c1', speed: 0.4 }, // cherry blossom pink
+    { pos: [5, 3.5, -12], scale: 1.2, color: '#ffe5ec', speed: 0.35 }, // soft rose
+    { pos: [-1, 4.5, -14], scale: 1.1, color: '#d8e2dc', speed: 0.5 }, // sage/mint crane
   ], []);
 
   useFrame((state) => {
@@ -194,44 +264,19 @@ function FloatingHanboks() {
     if (!groupRef.current) return;
 
     groupRef.current.children.forEach((child, i) => {
-      const config = hanboks[i];
+      const config = cranes[i];
       if (!config) return;
-      child.position.y = config.pos[1] + Math.sin(t * config.speed + i) * 0.25;
-      child.rotation.y = Math.sin(t * 0.2 + i) * 0.1;
+      child.position.y = config.pos[1] + Math.sin(t * config.speed + i) * 0.35;
+      child.rotation.y = Math.sin(t * 0.2 + i) * 0.15;
+      child.rotation.z = Math.sin(t * 0.4 + i) * 0.05;
     });
   });
 
   return (
     <group ref={groupRef}>
-      {hanboks.map((h, idx) => (
-        <group key={idx} position={h.pos} scale={h.scale}>
-          <mesh>
-            <coneGeometry args={[0.6, 1.2, 16]} />
-            <meshStandardMaterial
-              color={h.color}
-              transparent
-              opacity={0.07}
-              depthWrite={false}
-            />
-          </mesh>
-          <mesh position={[0, 0.65, 0]}>
-            <cylinderGeometry args={[0.22, 0.26, 0.25, 12]} />
-            <meshStandardMaterial
-              color="#fafafa"
-              transparent
-              opacity={0.06}
-              depthWrite={false}
-            />
-          </mesh>
-          <mesh position={[0, 0.5, 0.22]} rotation={[0.2, 0, 0.1]}>
-            <boxGeometry args={[0.06, 0.5, 0.01]} />
-            <meshStandardMaterial
-              color={h.color}
-              transparent
-              opacity={0.08}
-              depthWrite={false}
-            />
-          </mesh>
+      {cranes.map((c, idx) => (
+        <group key={idx} position={c.pos} scale={c.scale}>
+          <OrigamiCraneModel color={c.color} opacity={0.15} />
         </group>
       ))}
     </group>
@@ -372,7 +417,7 @@ export default function Atmosphere({ activeNodeId }) {
       <CherryBlossomPetals activeNodeId={activeNodeId} />
       <DustMotes />
       <FloatingWishes />
-      <FloatingHanboks />
+      <FloatingOrigamiCranes />
 
       {/* ── 5 Paper Lanterns (Warm emissive mesh glowing, no pointLights) ── */}
       <PaperLantern position={[-5, 3.5, -4]} pulseSpeed={1.1} floatOffset={0} sizeScale={1.2} theme="cream" />

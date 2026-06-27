@@ -37,15 +37,26 @@ export default function MeditationZoneModel({ hovered = false, isActive = false,
 
   return (
     <group position={[0, -0.6, 0]}>
-      {/* ── 1. Traditional Korean Floor Cushion ── */}
+      {/* ── 1. Traditional Japanese Zabuton & Zafu Cushion Stack ── */}
+      {/* Zabuton: Square base cushion */}
       <mesh castShadow receiveShadow position={[0, -0.05, 0.4]}>
-        <boxGeometry args={[1.1, 0.08, 1.1]} />
-        <meshStandardMaterial color="#f5ebe0" roughness={0.9} /> {/* warm linen cream */}
+        <boxGeometry args={[1.1, 0.07, 1.1]} />
+        <meshStandardMaterial color="#203346" roughness={0.95} /> {/* Deep Indigo blue */}
       </mesh>
-      {/* Accent border strip on cushion */}
+      {/* Zabuton silk border trim */}
       <mesh position={[0, -0.05, 0.4]}>
-        <boxGeometry args={[1.12, 0.03, 1.12]} />
-        <meshStandardMaterial color="#dca9a7" roughness={0.8} /> {/* blush pink edge */}
+        <boxGeometry args={[1.11, 0.03, 1.11]} />
+        <meshStandardMaterial color="#d4af37" roughness={0.8} /> {/* Gold trim edge */}
+      </mesh>
+      {/* Zafu: Round meditation cushion on top */}
+      <mesh castShadow position={[0, 0.03, 0.4]}>
+        <cylinderGeometry args={[0.42, 0.42, 0.09, 16]} />
+        <meshStandardMaterial color="#f4f0e6" roughness={0.9} /> {/* Buckwheat cream */}
+      </mesh>
+      {/* Zafu center button/tuft details */}
+      <mesh position={[0, 0.078, 0.4]}>
+        <cylinderGeometry args={[0.05, 0.05, 0.01, 8]} />
+        <meshStandardMaterial color="#203346" />
       </mesh>
 
       {/* ── 2. Low Wooden Tea Table ── */}
@@ -72,16 +83,21 @@ export default function MeditationZoneModel({ hovered = false, isActive = false,
         <meshStandardMaterial color="#4a3c31" />
       </mesh>
 
-      {/* ── 3. Tea Cup & Steaming Tea ── */}
+      {/* ── 3. Yunomi Tea Cup & Steaming Tea ── */}
       <group position={[-0.25, 0.18, -0.4]}>
-        {/* Tea Cup base */}
-        <mesh castShadow>
-          <cylinderGeometry args={[0.12, 0.09, 0.16, 12]} />
-          <meshStandardMaterial color="#faf9f6" roughness={0.2} />
+        {/* Yunomi Clay base (unglazed foot ring) */}
+        <mesh position={[0, -0.06, 0]} castShadow>
+          <cylinderGeometry args={[0.085, 0.085, 0.03, 12]} />
+          <meshStandardMaterial color="#6d4c41" roughness={0.9} /> {/* dark brown clay */}
+        </mesh>
+        {/* Yunomi Cup Body (moss-green glaze) */}
+        <mesh position={[0, 0.02, 0]} castShadow>
+          <cylinderGeometry args={[0.11, 0.09, 0.14, 12]} />
+          <meshStandardMaterial color="#7d8c77" roughness={0.25} metalness={0.1} /> {/* ceramic moss glaze */}
         </mesh>
         {/* Tea liquid inside */}
-        <mesh position={[0, 0.06, 0]}>
-          <cylinderGeometry args={[0.11, 0.11, 0.02, 12]} />
+        <mesh position={[0, 0.07, 0]}>
+          <cylinderGeometry args={[0.1, 0.1, 0.01, 12]} />
           <meshStandardMaterial color="#cd853f" roughness={0.4} />
         </mesh>
         {/* Steaming Torus rings */}
